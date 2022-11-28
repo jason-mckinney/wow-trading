@@ -13,6 +13,7 @@ import org.specs2.execute.Pending
 import org.specs2.specification.core.SpecStructure
 import org.specs2.main.Arguments
 import org.specs2.specification.create.InterpolatedFragment
+import reflect.Selectable.reflectiveSelectable
 
 import doobie._
 import doobie.implicits._
@@ -21,11 +22,11 @@ import net.jmmckinney.wowtrading.api.json.response.CommoditySnapshot
 import fs2.io.file.Files
 import cats.effect.IO
 import fs2.io.file.Path
+import net.jmmckinney.wowtrading.app.Configuration
 
 class TimescaleDatastoreSpec extends DatastoreSpec {
-  
   override def datastoreResource: DatastoreResource = TimescaleDatastoreResource(
-    url = "jdbc:postgresql://127.0.0.1/",
+    url = s"jdbc:postgresql://timescale/",
     user = "postgres",
     pass = "password"
   )
