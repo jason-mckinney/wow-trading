@@ -1,26 +1,40 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+image: docker:20.10.21
+
+variables:
+  SCALA_RUNNER: sbtscala/scala-sbt:openjdk-18.0.2.1_1.8.0_3.2.1
+
 stages:
-- build
+- compile
 - test
 - deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-sast:
+
+compile:
+  stage: compile
+  image: $SCALA_RUNNER
+  script:
+    - sbt Test/compile
+
+core:
   stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+  image: $SCALA_RUNNER
+  services:
+    - name: timescale/timescaledb:2.8.1-pg14
+      alias: timescale
+  variables:
+    JAVA_OPTS: "-Dblizzard.clientId=$BLIZZARD_API_CLIENTID -Dblizzard.secret=$BLIZZARD_API_SECRET"
+    POSTGRES_DB: "postgres"
+    POSTGRES_PASSWORD: "password"
+  script:
+    - sbt 'project core' test
+  except:
+    - stable
+    - development
+    - tags
+
+deploy:
+  stage: deploy
+  image: $SCALA_RUNNER
+  script:
+    - sbt Docker/publish
+  only:
+    - tags
