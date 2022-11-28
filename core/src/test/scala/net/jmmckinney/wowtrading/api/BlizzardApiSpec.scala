@@ -11,9 +11,9 @@ import reflect.Selectable.reflectiveSelectable
 
 class BlizzardApiSpec extends Specification with CatsEffect:
 
-  override val Timeout = 90.seconds
+  override val Timeout = Duration.Inf
 
-  val config = Configuration()
+  val config = new Configuration()
 
   "Able to obtain token" >> {
     for {
@@ -37,8 +37,7 @@ class BlizzardApiSpec extends Specification with CatsEffect:
       
       result = {
         response must beSome
-        println(s"${response.get.auctions.length}")
-        response.get.auctions.length must beGreaterThan(0)
+        response.get._1.auctions.length must beGreaterThan(0)
       }
     } yield result
   }

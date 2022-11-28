@@ -19,32 +19,5 @@ import net.jmmckinney.wowtrading.datastore.TimescaleDatastore
 
 object Launch extends IOApp with StrictLogging {
   def run(args: List[String]): IO[ExitCode] = 
-    // Files[IO].readAll(Path("/Users/jmckinney/Downloads/response.json"))
-    //   .compile
-    //   .toVector
-    //   .flatMap(response => CommodityResponse(response.map(_.toChar).mkString))
-    //   .flatMap(res => res match {
-    //     case Some(commodities) => CommoditySnapshot(java.time.Instant.now(), "US" ,commodities).map(Some(_))
-    //     case None => IO(Option.empty)
-    //   })
-    //   .flatMap(snapshot => {
-    //     TimescaleDatastoreResource(
-    //       url = "jdbc:postgresql://127.0.0.1/",
-    //       user = "postgres",
-    //       pass = "Kloud!1235"
-    //     ).use(datastore => {
-    //       snapshot match {
-    //         case Some(value) => datastore.insertCommoditySnapshot(value)
-    //         case None => IO{}
-    //       }
-    //         // set up and run gRPC stuff and other logic in here
-            
-    //         // one the scope of the function passed into `use` is exited,
-    //         // the SQL transactor from hikari is cleaned up automatically
-
-    //         // unlike Futures, Resources can be recycled,
-    //         // and `use` can be called again to create another transactor/connection pool
-    //     })
-    //   })
     IO(ExitCode.Success)
   }

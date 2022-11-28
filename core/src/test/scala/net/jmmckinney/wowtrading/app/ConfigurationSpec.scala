@@ -5,7 +5,7 @@ import cats.effect.testing.specs2.CatsEffect
 import reflect.Selectable.reflectiveSelectable
 
 
-class ConfigurationSpec extends Specification with CatsEffect {
+class ConfigurationSpec extends Specification {
   "configuration loaded with defaults" >> {
     val config = Configuration()
 

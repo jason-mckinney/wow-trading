@@ -18,7 +18,7 @@ with CatsEffect
 with AfterAll {
   sequential
 
-  override val Timeout = 30.seconds
+  override val Timeout = 60.seconds
   given runtime: IORuntime = cats.effect.unsafe.IORuntime.global
 
   def datastoreResource: DatastoreResource
@@ -41,7 +41,7 @@ with AfterAll {
     for {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
-      snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
       now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
       rows <- datastore.itemListings.compile.count
@@ -53,7 +53,7 @@ with AfterAll {
    for {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
-      snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
       now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
@@ -70,7 +70,7 @@ with AfterAll {
     for {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
-      snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
       now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
@@ -86,7 +86,7 @@ with AfterAll {
     for {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
-      snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
       now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
@@ -100,7 +100,7 @@ with AfterAll {
     for {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
-      snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
       earlier = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       last2 = earlier.plusSeconds(3600)
       last1 = last2.plusSeconds(3600)

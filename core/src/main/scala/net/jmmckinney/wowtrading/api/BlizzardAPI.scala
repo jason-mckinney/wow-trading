@@ -16,6 +16,12 @@ import java.io.IOException
 import net.jmmckinney.wowtrading.api.json.response.CommoditySnapshot
 import com.typesafe.scalalogging.StrictLogging
 import sttp.model.StatusCode
+import doobie.enumerated.JdbcType.Timestamp
+import sttp.model.HeaderNames
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.time.ZoneId
 
 
 private class BlizzardApi(
@@ -25,7 +31,7 @@ private class BlizzardApi(
 )(using backend: SttpBackend[IO, Fs2Streams[IO] & WebSockets]) extends StrictLogging {
   val delegate = AccessTokenProvider[IO](tokenUrl, clientId, clientSecret)(backend)
   val tokenProvider = CachingAccessTokenProvider.refCacheInstance[IO](delegate)
-  
+
   def getToken: IO[Secret[String]] = {
     for {
       provider <- tokenProvider
@@ -33,7 +39,10 @@ private class BlizzardApi(
     } yield token.accessToken
   }
 
-  def getCommodities(namespace: String, locale: String): IO[Option[CommoditySnapshot]] = getToken.flatMap(token => {
+  def getCommodities(
+    namespace: String,
+    locale: String
+  ): IO[Option[(CommoditySnapshot, java.time.Instant)]] = getToken.flatMap(token => {
     val uri = Uri(
       java.net.URI(s"https://us.api.blizzard.com/data/wow/auctions/commodities?" +
         s"namespace=$namespace&" +
@@ -51,7 +60,31 @@ private class BlizzardApi(
             logger.error(s"Error retrieving commodities snapshot from blizzard: $e")
             IO(Option.empty)
           },
-          v => v.through(fs2.text.utf8.decode).compile.string.flatMap(CommoditySnapshot(_))
+          v => v.through(fs2.text.utf8.decode).compile.string.map(CommoditySnapshot(_) match {
+            case Some(snapshot) => {
+              response.headers.collectFirst{
+                case header if(header.name == "last-modified") => {
+                  LocalDateTime.parse(
+                    header.value,
+                    DateTimeFormatter.ofPattern("EEE, d MMM uuuu HH:mm:ss zzz", Locale.US)
+                  )
+                  .atZone(ZoneId.of("Etc/GMT"))
+                  .toInstant
+                }
+              } match {
+                case Some(instant) => Some((snapshot, instant))
+                case None => {
+                  logger.error("Error getting commodity snapshot from blizzard: could not parse last-modified time from headers")
+                  Option.empty
+                }
+              }
+            }
+            
+            case None => {
+              logger.error("Error getting commodity snapshot from blizzard: could not build snapshot from response body")
+              Option.empty
+            }
+          })
         )
         case _ => {
           logger.error(s"Error retrieving commodities snapshot from blizzard: ${response.code}")

@@ -29,5 +29,5 @@ case class CommoditySnapshot private(
 )
 
 object CommoditySnapshot {
-  def apply(input: String): IO[Option[CommoditySnapshot]] = IO(decode[CommoditySnapshot](input).toOption)
+  def apply(input: String): Option[CommoditySnapshot] = decode[CommoditySnapshot](input).toOption
 }
