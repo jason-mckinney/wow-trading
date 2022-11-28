@@ -1,13 +1,12 @@
-val scala3Version = "3.2.0"
+ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / version      := "0.1.0-SNAPSHOT"
 
-lazy val root = project
-  .in(file("."))
+lazy val root = (project in file("."))
+  .aggregate(core)
+
+lazy val core = (project in file("core"))
   .settings(
     name := "wow-trading",
-    version := "0.1.0-SNAPSHOT",
-
-    scalaVersion := scala3Version,
-
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect" % "3.4.1",
       "co.fs2" %% "fs2-core" % "3.3.0",
@@ -15,6 +14,18 @@ lazy val root = project
       "io.circe" %% "circe-core" % "0.14.1",
       "io.circe" %% "circe-generic" % "0.14.1",
       "io.circe" %% "circe-parser" % "0.14.1",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.19.0",
+      "org.apache.logging.log4j" % "log4j-api"        % "2.19.0",
+      "org.apache.logging.log4j" % "log4j-core"       % "2.19.0",
+      "org.tpolecat" %% "doobie-core"      % "1.0.0-RC2",
+      "org.tpolecat" %% "doobie-postgres"  % "1.0.0-RC2",
+      "org.tpolecat" %% "doobie-hikari"    % "1.0.0-RC2",
+      "org.tpolecat" %% "doobie-postgres-circe" % "1.0.0-RC2",
+      "com.softwaremill.sttp.client3" %% "core" % "3.8.3",
+      "com.softwaremill.sttp.client3" %% "fs2" % "3.8.3",
+      "com.ocadotechnology" %% "sttp-oauth2" % "0.15.2",
+      "com.ocadotechnology" %% "sttp-oauth2-cache-cats" % "0.15.2",
       "org.typelevel" %% "cats-effect-testing-specs2" % "1.5.0" % Test
     )
   )
