@@ -30,3 +30,11 @@ core:
     - stable
     - development
     - tags
+
+deploy:
+  stage: deploy
+  image: $SCALA_RUNNER
+  script:
+    - sbt Docker/publish
+  only:
+    - tags
