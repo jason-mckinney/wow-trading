@@ -26,11 +26,11 @@ import net.jmmckinney.wowtrading.model.EncodedListings
 import java.time.temporal.ChronoUnit
 
 
-class TimescaleDatastoreResource(url: String, user: String, pass: String)
+class TimescaleDatastoreResource(url: String, user: String, pass: String, threadPoolSize: Int = 16)
 extends DatastoreResource
 with StrictLogging {
   val postgres: Resource[IO, HikariTransactor[IO]] = for {
-    ec <- ExecutionContexts.fixedThreadPool[IO](16)
+    ec <- ExecutionContexts.fixedThreadPool[IO](threadPoolSize)
     transactor <- HikariTransactor.newHikariTransactor[IO](
       driverClassName = "org.postgresql.Driver",
       url = url,
@@ -168,5 +168,14 @@ with StrictLogging {
     .stream
     .transact(transactor)
     .flatMap(encoded => Stream.emits(ItemListing.listingsFromEncoded(encoded)))
+  }
+
+  override def latestSnapshotTime: IO[Option[java.time.Instant]] = {
+    sql"select distinct time from commodities order by time desc limit 1"
+    .query[java.time.Instant]
+    .stream
+    .transact(transactor)
+    .compile
+    .last
   }
 }

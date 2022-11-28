@@ -96,6 +96,20 @@ with AfterAll {
     } yield result
   }
 
+  "can retrieve the most recent timestamp from the datastore" >> {
+    for {
+      _ <- datastore.flushdb
+      response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
+      snapshot = CommoditySnapshot(response.map(_.toChar).mkString)
+      now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
+      later = now.plusSeconds(3600)
+      _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
+      _ <- datastore.insertCommoditySnapshot(snapshot.get, later, "US")
+      latestSnapshotTime <- datastore.latestSnapshotTime
+      result = latestSnapshotTime.get must be_==(later)
+    } yield result
+  }
+
   "can retrieve listings with the 3 most recent timestamps from the datastore" >> {
     for {
       _ <- datastore.flushdb

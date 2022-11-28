@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.time.ZoneId
+import scala.concurrent.duration._
 
 
 private class BlizzardApi(
@@ -39,10 +40,21 @@ private class BlizzardApi(
     } yield token.accessToken
   }
 
+  def getCommoditiesUntilValid(
+    namespace: String,
+    locale: String
+  ): IO[(CommoditySnapshot, java.time.Instant)] = IO.defer{
+    getCommodities(namespace, locale).flatMap(_ match {
+      case Some(snapshot) => IO(snapshot)
+      case None => IO.sleep(1.minute).flatMap(_ => getCommoditiesUntilValid(namespace, locale))
+    })
+  }
+
   def getCommodities(
     namespace: String,
     locale: String
   ): IO[Option[(CommoditySnapshot, java.time.Instant)]] = getToken.flatMap(token => {
+    logger.info(s"Getting commodities for $namespace/$locale")
     val uri = Uri(
       java.net.URI(s"https://us.api.blizzard.com/data/wow/auctions/commodities?" +
         s"namespace=$namespace&" +
@@ -97,13 +109,12 @@ private class BlizzardApi(
 
 object BlizzardApi {
   def use[A](
-    tokenUrl: Uri,
     clientId: NonEmptyString,
     clientSecret: Secret[String]
   )(f: BlizzardApi => IO[A]): IO[A] = {
     HttpClientFs2Backend.resource[IO]()
     .use(backend => {
-      f(BlizzardApi(tokenUrl, clientId, clientSecret)(using backend))
+      f(BlizzardApi(tokenUrl = Uri(new java.net.URI("https://oauth.battle.net/token")), clientId, clientSecret)(using backend))
     })
   }
 }

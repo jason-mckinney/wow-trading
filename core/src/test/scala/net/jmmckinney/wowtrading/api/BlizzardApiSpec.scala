@@ -18,7 +18,6 @@ class BlizzardApiSpec extends Specification with CatsEffect:
   "Able to obtain token" >> {
     for {
       token <- BlizzardApi.use(
-        tokenUrl = Uri(new java.net.URI("https://oauth.battle.net/token")),
         clientId = NonEmptyString.from(config.Blizzard.clientId).toOption.get,
         clientSecret = config.Blizzard.secret
       )(blizzardApi => blizzardApi.getToken)
@@ -30,7 +29,6 @@ class BlizzardApiSpec extends Specification with CatsEffect:
   "Able to obtain commodity data" >> {
     for {
       response <- BlizzardApi.use(
-        tokenUrl = Uri(new java.net.URI("https://oauth.battle.net/token")),
         clientId = NonEmptyString.from(config.Blizzard.clientId).toOption.get,
         clientSecret = config.Blizzard.secret
       )(blizzardApi => blizzardApi.getCommodities(namespace = "dynamic-us", locale = "en_US"))

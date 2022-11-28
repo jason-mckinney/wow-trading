@@ -18,4 +18,5 @@ abstract class Datastore {
   def itemListingsFrom(from: java.time.Instant, to: java.time.Instant): fs2.Stream[IO, ItemListing]
   def latestSnapshot: fs2.Stream[IO, ItemListing] = latestSnapshots(1)
   def latestSnapshots(nLatest: Int): fs2.Stream[IO, ItemListing]
+  def latestSnapshotTime: IO[Option[java.time.Instant]]
 }
