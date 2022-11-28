@@ -10,6 +10,7 @@ import fs2.io.file.Path
 import net.jmmckinney.wowtrading.api.json.response.CommoditySnapshot
 import scala.concurrent.duration._
 import net.jmmckinney.wowtrading.util.IO.repeat
+import java.time.temporal.ChronoUnit
 
 
 abstract class DatastoreSpec extends Specification
@@ -41,7 +42,7 @@ with AfterAll {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
       snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
-      now = java.time.Instant.now
+      now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
       rows <- datastore.itemListings.compile.count
       result = rows must be_==(snapshot.get.auctions.length)
@@ -53,7 +54,7 @@ with AfterAll {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
       snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
-      now = java.time.Instant.now
+      now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
       _ <- datastore.insertCommoditySnapshot(snapshot.get, later, "US")
@@ -70,7 +71,7 @@ with AfterAll {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
       snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
-      now = java.time.Instant.now
+      now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
       _ <- datastore.insertCommoditySnapshot(snapshot.get, later, "US")
@@ -86,7 +87,7 @@ with AfterAll {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
       snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
-      now = java.time.Instant.now
+      now = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       later = now.plusSeconds(3600)
       _ <- datastore.insertCommoditySnapshot(snapshot.get, now, "US")
       _ <- datastore.insertCommoditySnapshot(snapshot.get, later, "US")
@@ -100,7 +101,7 @@ with AfterAll {
       _ <- datastore.flushdb
       response <- Files[IO].readAll(Path("core/src/test/resources/commodities.json")).compile.toVector
       snapshot <- CommoditySnapshot(response.map(_.toChar).mkString)
-      earlier = java.time.Instant.now
+      earlier = java.time.Instant.now.truncatedTo(ChronoUnit.MILLIS)
       last2 = earlier.plusSeconds(3600)
       last1 = last2.plusSeconds(3600)
       latest = last1.plusSeconds(3600)

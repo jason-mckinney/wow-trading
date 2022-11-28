@@ -23,6 +23,7 @@ import doobie.Meta
 import org.postgresql.util.PGobject
 import doobie.util.update.Update
 import net.jmmckinney.wowtrading.model.EncodedListings
+import java.time.temporal.ChronoUnit
 
 
 class TimescaleDatastoreResource(url: String, user: String, pass: String)
@@ -121,7 +122,11 @@ with StrictLogging {
   ): IO[Int] = {
     logger.info("Inserting commodity snapshot")
     
-    val listings = ItemListing.fromCommoditySnapshot(snapshot, time, region)
+    val listings = ItemListing.fromCommoditySnapshot(
+      snapshot,
+      time.truncatedTo(ChronoUnit.MILLIS),
+      region
+    )
     .groupBy(_.itemId)
     .map(group => EncodedListings(time, region, group._1, group._2)).toSeq
 
