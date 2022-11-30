@@ -1,7 +1,7 @@
 image: docker:20.10.21
 
 variables:
-  SCALA_RUNNER: registry.jmmckinney.net/ci-runner-sbt:0.1.0
+  SCALA_RUNNER: registry.jmmckinney.net/jmckinney/ci-runner-sbt:0.1.0
 
 stages:
 - compile
