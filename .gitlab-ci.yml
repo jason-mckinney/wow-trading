@@ -1,7 +1,7 @@
 image: docker:20.10.21
 
 variables:
-  SCALA_RUNNER: sbtscala/scala-sbt:openjdk-18.0.2.1_1.8.0_3.2.1
+  SCALA_RUNNER: registry.jmmckinney.net/jmckinney/ci-runner-sbt:0.1.0
 
 stages:
 - compile
@@ -35,6 +35,7 @@ deploy:
   stage: deploy
   image: $SCALA_RUNNER
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sbt Docker/publish
   only:
     - tags
