@@ -50,7 +50,7 @@ object Launch extends IOApp with StrictLogging {
                     logger.info("  New snapshot received")
                     datastore.insertCommoditySnapshot(snapshot._1, snapshot._2, config.Blizzard.locale.substring(config.Blizzard.locale.length-2))
                 } else {
-                  val timeToWait = Math.min(1, java.time.Instant.now.until(snapshot._2.plus(1.hours.toJava), ChronoUnit.MINUTES))
+                  val timeToWait = Math.max(1, java.time.Instant.now.until(snapshot._2.plus(1.hours.toJava), ChronoUnit.MINUTES))
                   logger.info(s"No new snapshot - checking again in $timeToWait minute(s)")
                   IO.sleep(timeToWait.minutes).flatMap(_ => pollUntilNewSnapshot)
                 }

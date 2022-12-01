@@ -45,6 +45,6 @@ deploy:
     - until docker info; do sleep 1; done
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - sbt Docker/publish
+    - sbt 'project core' Docker/publish
   only:
     - tags
