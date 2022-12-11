@@ -1,7 +1,11 @@
 image: docker:20.10.21
 
 variables:
-  SCALA_RUNNER: sbtscala/scala-sbt:openjdk-18.0.2.1_1.8.0_3.2.1
+  SCALA_RUNNER: registry.jmmckinney.net/jmckinney/ci-runner-sbt:0.1.0
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
 
 stages:
 - compile
@@ -34,7 +38,13 @@ core:
 deploy:
   stage: deploy
   image: $SCALA_RUNNER
+  services:
+    - docker:dind
+  before_script:
+    - mkdir -p ~/.docker
+    - until docker info; do sleep 1; done
   script:
-    - sbt Docker/publish
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - sbt 'project core' Docker/publish
   only:
     - tags

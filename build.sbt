@@ -2,7 +2,7 @@ import sys.process._
 import com.typesafe.sbt.packager.docker._
 
 ThisBuild / scalaVersion := "3.2.1"
-ThisBuild / version      := "0.1.0"
+ThisBuild / version      := "0.1.2"
 
 val commonApplicationSettings = Seq(
   // https://www.scala-sbt.org/sbt-native-packager/formats/docker.html

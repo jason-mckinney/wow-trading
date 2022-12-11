@@ -19,6 +19,8 @@ import reflect.Selectable.reflectiveSelectable
 import net.jmmckinney.wowtrading.api.BlizzardApi
 import eu.timepit.refined.types.string.NonEmptyString
 import scala.concurrent.duration._
+import scala.jdk.DurationConverters._
+import java.time.temporal.ChronoUnit
 
 
 object Launch extends IOApp with StrictLogging {
@@ -48,8 +50,9 @@ object Launch extends IOApp with StrictLogging {
                     logger.info("  New snapshot received")
                     datastore.insertCommoditySnapshot(snapshot._1, snapshot._2, config.Blizzard.locale.substring(config.Blizzard.locale.length-2))
                 } else {
-                  logger.info("  No new snapshot - checking again in one minute")
-                  IO.sleep(1.minute).flatMap(_ => pollUntilNewSnapshot)
+                  val timeToWait = Math.max(1, java.time.Instant.now.until(snapshot._2.plus(1.hours.toJava), ChronoUnit.MINUTES))
+                  logger.info(s"No new snapshot - checking again in $timeToWait minute(s)")
+                  IO.sleep(timeToWait.minutes).flatMap(_ => pollUntilNewSnapshot)
                 }
               })
             }
@@ -68,7 +71,7 @@ object Launch extends IOApp with StrictLogging {
         pollUntilNewSnapshot
       }
       .map(rows => logger.info(s"Added snapshot with $rows rows to datastore. Waiting 1 hour for next snapshot..."))
-      .andWait(1.hour)
+      .andWait(58.minutes)
       .foreverM
     )
     }).map(_ => ExitCode.Success)
